@@ -1,0 +1,14 @@
+{
+  "name": "imagen-3d",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preinstall": "echo 'Setting up imagen-3d...' && cd 3dgs-app && npm install && cd ../gsplat && npm i rollup",
+    "postinstall": "echo 'imagen-3d is ready to use!'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
