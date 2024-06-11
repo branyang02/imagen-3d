@@ -1,6 +1,11 @@
 # IMAGEN 3D Library
 
-### Developing
+### Pre-requisites
+
+1. `emcc` is installed and available in the PATH. Instructions to install `emcc` can be found [here](https://emscripten.org/docs/getting_started/downloads.html).
+2. `npm` is installed. Instructions to install `npm` can be found [here](https://www.npmjs.com/get-npm).
+
+### Use
 
 1. Navigate to `gsplat` and run `npm run watch`. This builds the `dist` library in `gsplat` which is used by `3dgs-app`
 
