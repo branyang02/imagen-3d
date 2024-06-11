@@ -12,7 +12,7 @@
         "test": "jest --passWithNoTests",
         "lint": "eslint \"src/**/*.ts\" \"examples/**/*.ts\"",
         "format": "prettier --write \"src/**/*.ts\" \"examples/**/*.ts\"",
-        "watch": "nodemon --watch src --delay 2s --exec 'npm run build'"
+        "watch": "rollup -c -w"
     },
     "repository": {
         "type": "git",
