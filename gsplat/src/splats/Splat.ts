@@ -90,6 +90,11 @@ class Splat extends Object3D {
         link.click();
     }
 
+    highlightFromTextQuery(query: string): SplatData {
+        const indices = this.data.findObjects(query);
+        return this.data.highlight(indices);
+    }
+
     get data() {
         return this._data;
     }

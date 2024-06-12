@@ -14,6 +14,7 @@ class SplatData {
     private _scales: Float32Array;
     private _colors: Uint8Array;
     private _selection: Uint8Array;
+    private _semanticData: Float32Array;
 
     translate: (translation: Vector3) => void;
     rotate: (rotation: Quaternion) => void;
@@ -25,6 +26,7 @@ class SplatData {
         scales: ArrayBufferLike,
         colors: ArrayBufferLike,
         selection: ArrayBufferLike,
+        semanticData?: ArrayBufferLike,
     ) => void;
 
     constructor(
@@ -33,6 +35,7 @@ class SplatData {
         rotations: Float32Array | null = null,
         scales: Float32Array | null = null,
         colors: Uint8Array | null = null,
+        semanticData: Float32Array | null = null,
     ) {
         this._vertexCount = vertexCount;
         this._positions = positions || new Float32Array(0);
@@ -40,6 +43,7 @@ class SplatData {
         this._scales = scales || new Float32Array(0);
         this._colors = colors || new Uint8Array(0);
         this._selection = new Uint8Array(this.vertexCount);
+        this._semanticData = semanticData || new Float32Array(0);
 
         this.translate = (translation: Vector3) => {
             for (let i = 0; i < this.vertexCount; i++) {
@@ -128,6 +132,7 @@ class SplatData {
             scales: ArrayBufferLike,
             colors: ArrayBufferLike,
             selection: ArrayBufferLike,
+            semanticData?: ArrayBufferLike,
         ) => {
             console.assert(
                 positions.byteLength === this.vertexCount * 3 * 4,
@@ -138,11 +143,12 @@ class SplatData {
             this._scales = new Float32Array(scales);
             this._colors = new Uint8Array(colors);
             this._selection = new Uint8Array(selection);
+            this._semanticData = semanticData ? new Float32Array(semanticData) : new Float32Array(0);
             this.detached = false;
         };
     }
 
-    static Deserialize(data: Uint8Array): SplatData {
+    static Deserialize(data: Uint8Array, semanticData?: Float32Array): SplatData {
         const vertexCount = data.length / SplatData.RowLength;
         const positions = new Float32Array(3 * vertexCount);
         const rotations = new Float32Array(4 * vertexCount);
@@ -172,7 +178,35 @@ class SplatData {
             colors[4 * i + 3] = u_buffer[32 * i + 24 + 3];
         }
 
-        return new SplatData(vertexCount, positions, rotations, scales, colors);
+        return new SplatData(vertexCount, positions, rotations, scales, colors, semanticData);
+    }
+
+    findObjects(query: string) {
+        const pointIndices = [];
+        const queryLower = query.toLowerCase();
+        // TODO: implement search and return point indices
+
+        // randomly select 5000 indices
+        for (let i = 0; i < 5000; i++) {
+            pointIndices.push(Math.floor(Math.random() * this.vertexCount));
+        }
+
+        return pointIndices;
+    }
+
+    highlight(points: number[]): SplatData {
+        const temp_splat_data = this.clone();
+        console.log("Highlighting points" + points);
+
+        for (let i = 0; i < points.length; i++) {
+            const index = points[i];
+            temp_splat_data.colors[4 * index + 0] = 255;
+            temp_splat_data.colors[4 * index + 1] = 0;
+            temp_splat_data.colors[4 * index + 2] = 0;
+            temp_splat_data.colors[4 * index + 3] = 255;
+        }
+
+        return temp_splat_data;
     }
 
     get vertexCount() {
@@ -199,6 +233,10 @@ class SplatData {
         return this._selection;
     }
 
+    get semanticData() {
+        return this._semanticData;
+    }
+
     clone() {
         return new SplatData(
             this.vertexCount,
@@ -206,6 +244,7 @@ class SplatData {
             new Float32Array(this.rotations),
             new Float32Array(this.scales),
             new Uint8Array(this.colors),
+            new Float32Array(this.semanticData),
         );
     }
 }

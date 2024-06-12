@@ -13,10 +13,6 @@ class PLYLoader {
         this.scene = scene;
     }
 
-    highlightPoints(pointsIdxArray: number[], splat: Splat) {
-        // TODO: Implement highlightPoints
-    }
-
     async LoadAsync(
         url: string,
         onProgress?: (progress: number) => void,
@@ -58,27 +54,8 @@ class PLYLoader {
         const buffer = new Uint8Array(plyBufferMeta.buffer);
 
         const semanticBuffer = new Float32Array(plyBufferMeta.semanticBuffer); // semanticBuffer.length = 256 * vertexCount
-        // TODO: Implement semanticBuffer
-        const data = SplatData.Deserialize(buffer);
+        const data = SplatData.Deserialize(buffer, semanticBuffer);
         console.log(data);
-
-        // change color of certain point clouds
-        highlightFirstHalf(data);
-
-        function highlightFirstHalf(data: SplatData) {
-            // Highlight color
-            let red = 55; // Intensity value for red
-            let green = 0; // You can adjust this
-            let blue = 0; // You can adjust this
-            let alpha = 255; // Fully opaque
-
-            for (let i = 0; i < 1647524; i += 4) {
-                data.colors[i] = red; // Red channel
-                data.colors[i + 1] = green; // Green channel
-                data.colors[i + 2] = blue; // Blue channel
-                data.colors[i + 3] = alpha; // Alpha channel
-            }
-        }
 
         const splat = new Splat(data);
         this.scene.addObject(splat);
