@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, SetStateAction } from "react";
-import { Button, SearchInput } from "evergreen-ui";
+import { useState, useEffect, useRef, SetStateAction, ChangeEvent } from "react";
+import { Button, Pane, SearchInput } from "evergreen-ui";
 import * as SPLAT from "gsplat";
 
 function App() {
     const canvasRef = useRef<HTMLDivElement>(null);
-    const [file, setFile] = useState(null);
+    const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [splat, setSplat] = useState<SPLAT.Splat | null>(null);
     const [query, setQuery] = useState(""); // State to hold the search query
@@ -54,8 +54,8 @@ function App() {
         setupRenderer();
     }, [file]);
 
-    const handleFileChange = (event) => {
-        if (event.target.files.length > 0) {
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
             const uploadedFile = event.target.files[0];
             if (uploadedFile.name.endsWith(".ply")) {
                 setFile(uploadedFile);
@@ -90,27 +90,29 @@ function App() {
                 </div>
             )}
             {loading && (
-                <>
-                    <SearchInput
-                        placeholder="Filter traits..."
-                        margin="auto"
-                        onChange={(e: { target: { value: SetStateAction<string> } }) => setQuery(e.target.value)}
-                        value={query}
-                    />
-                    <Button
-                        appearance="primary"
-                        intent="success"
-                        marginRight={16}
-                        onClick={() => highlightQuery(query)}
-                    >
-                        Submit
-                    </Button>
+                <Pane>
+                    <Pane marginBottom="40px">
+                        <SearchInput
+                            placeholder="Find Objects"
+                            margin="auto"
+                            onChange={(e: { target: { value: SetStateAction<string> } }) => setQuery(e.target.value)}
+                            value={query}
+                        />
+                        <Button
+                            appearance="primary"
+                            intent="success"
+                            marginRight={16}
+                            onClick={() => highlightQuery(query)}
+                        >
+                            Submit
+                        </Button>
 
-                    <Button appearance="primary" intent="danger" marginRight={16} onClick={() => resetScene()}>
-                        Reset Scene
-                    </Button>
+                        <Button appearance="primary" intent="danger" marginRight={16} onClick={() => resetScene()}>
+                            Reset Scene
+                        </Button>
+                    </Pane>
                     <div ref={canvasRef}>{}</div>
-                </>
+                </Pane>
             )}
         </div>
     );
