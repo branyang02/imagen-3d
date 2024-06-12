@@ -50,14 +50,22 @@ class PLYLoader {
     }
 
     static LoadFromArrayBuffer(arrayBuffer: ArrayBufferLike, scene: Scene, format: string = ""): Splat {
-        const buffer = new Uint8Array(this._ParsePLYBuffer(arrayBuffer, format));
+        const plyBufferMeta = this._ParsePLYBuffer(arrayBuffer, format);
+        const buffer = new Uint8Array(plyBufferMeta.buffer);
+
+        const semanticBuffer = new Float32Array(plyBufferMeta.semanticBuffer); // semanticBuffer.length = 256 * vertexCount
+        // TODO: Implement semanticBuffer
         const data = SplatData.Deserialize(buffer);
+        console.log(data);
         const splat = new Splat(data);
         scene.addObject(splat);
         return splat;
     }
 
-    private static _ParsePLYBuffer(inputBuffer: ArrayBuffer, format: string): ArrayBuffer {
+    private static _ParsePLYBuffer(
+        inputBuffer: ArrayBuffer,
+        format: string,
+    ): { buffer: ArrayBuffer; semanticBuffer: ArrayBuffer } {
         type PlyProperty = {
             name: string;
             type: string;
@@ -101,6 +109,10 @@ class PLYLoader {
 
         const q_polycam = Quaternion.FromEuler(new Vector3(Math.PI / 2, 0, 0));
 
+        const bufferLength = 256 * 4 * vertexCount; // 256 entries * 4 bytes each * vertexCount
+        const semanticBuffer = new ArrayBuffer(bufferLength);
+        const semanticArrays = new Array(vertexCount);
+
         for (let i = 0; i < vertexCount; i++) {
             const position = new Float32Array(buffer, i * SplatData.RowLength, 3);
             const scale = new Float32Array(buffer, i * SplatData.RowLength + 12, 3);
@@ -111,6 +123,10 @@ class PLYLoader {
             let r1: number = 0;
             let r2: number = 0;
             let r3: number = 0;
+
+            // Create a Float32Array view for each semanticArray
+            const offset = i * 256 * 4; // Offset in bytes for each semanticArray
+            semanticArrays[i] = new Float32Array(semanticBuffer, offset, 256);
 
             properties.forEach((property) => {
                 let value;
@@ -123,6 +139,12 @@ class PLYLoader {
                         break;
                     default:
                         throw new Error(`Unsupported property type: ${property.type}`);
+                }
+
+                if (property.name.startsWith("semantic_")) {
+                    const j = parseInt(property.name.split("_")[1]);
+                    semanticArrays[i][j] = value;
+                    return;
                 }
 
                 switch (property.name) {
@@ -217,7 +239,10 @@ class PLYLoader {
             rot[3] = q.z * 128 + 128;
         }
 
-        return buffer;
+        return {
+            buffer: buffer,
+            semanticBuffer: semanticBuffer,
+        };
     }
 }
 
