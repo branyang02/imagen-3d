@@ -5,7 +5,6 @@ import * as SPLAT from "gsplat";
 function App() {
     const canvasRef = useRef<HTMLDivElement>(null);
     const [file, setFile] = useState<File | null>(null);
-    const [loading, setLoading] = useState(false);
     const [splat, setSplat] = useState<SPLAT.Splat | null>(null);
     const [query, setQuery] = useState(""); // State to hold the search query
     const [scene, setScene] = useState<SPLAT.Scene | null>(null);
@@ -33,7 +32,7 @@ function App() {
             // Load the .ply file
             if (!file) return; //
             const splat = await plyLoader.LoadFromFileAsync(file, (progress: number) => {
-                console.log("Loading PLY file: " + progress);
+                console.log("fileLoading PLY file: " + progress);
             });
             setSplat(splat);
 
@@ -44,6 +43,7 @@ function App() {
                 requestAnimationFrame(frame);
             };
             requestAnimationFrame(frame);
+            console.log("Rendering complete");
 
             // Cleanup function to properly dispose resources when component unmounts
             return () => {
@@ -59,7 +59,6 @@ function App() {
             const uploadedFile = event.target.files[0];
             if (uploadedFile.name.endsWith(".ply")) {
                 setFile(uploadedFile);
-                setLoading(true);
             } else {
                 alert("Please upload a valid .ply file.");
             }
@@ -83,38 +82,38 @@ function App() {
     }
 
     return (
-        <div>
-            {!loading && (
-                <div style={{ padding: "20px" }}>
-                    <input type="file" onChange={handleFileChange} accept=".ply" />
-                </div>
-            )}
-            {loading && (
+        <Pane alignItems="center">
+            <Pane style={{ padding: "20px" }}>
+                <input type="file" onChange={handleFileChange} accept=".ply" />
+            </Pane>
+            {file && (
                 <Pane>
-                    <Pane marginBottom="40px">
+                    <Pane
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        width="100%"
+                        margin="auto"
+                        marginBottom="40px"
+                    >
                         <SearchInput
                             placeholder="Find Objects"
-                            margin="auto"
                             onChange={(e: { target: { value: SetStateAction<string> } }) => setQuery(e.target.value)}
                             value={query}
+                            marginX={8}
                         />
-                        <Button
-                            appearance="primary"
-                            intent="success"
-                            marginRight={16}
-                            onClick={() => highlightQuery(query)}
-                        >
+                        <Button appearance="primary" intent="success" onClick={() => highlightQuery(query)} marginX={8}>
                             Submit
                         </Button>
-
-                        <Button appearance="primary" intent="danger" marginRight={16} onClick={() => resetScene()}>
-                            Reset Scene
+                        <Button appearance="primary" intent="danger" onClick={() => resetScene()} marginX={8}>
+                            Reset
                         </Button>
                     </Pane>
+
                     <div ref={canvasRef}>{}</div>
                 </Pane>
             )}
-        </div>
+        </Pane>
     );
 }
 
