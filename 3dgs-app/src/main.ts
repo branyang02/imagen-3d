@@ -7,53 +7,54 @@ const controls = new SPLAT.OrbitControls(camera, renderer.canvas);
 
 let loading = false;
 
+// Creating a PLYLoader instance
+const plyLoader = new SPLAT.PLYLoader(scene);
+
 async function selectFile(file: File) {
     if (loading) return;
     loading = true;
-    // Check if .splat file
-    if (file.name.endsWith(".splat")) {
-        await SPLAT.Loader.LoadFromFileAsync(file, scene, (progress: number) => {
-            console.log("Loading SPLAT file: " + progress);
-        });
-    } else if (file.name.endsWith(".ply")) {
-        const format = "";
-        // const format = "polycam"; // Uncomment to load a Polycam PLY file
-        await SPLAT.PLYLoader.LoadFromFileAsync(
-            file,
-            scene,
-            (progress: number) => {
-                console.log("Loading PLY file: " + progress);
-            },
-            format,
-        );
+
+    if (file.name.endsWith(".ply")) {
+        const format = ""; // specify the format if needed, e.g., "polycam"
+        try {
+            const splat = await plyLoader.LoadFromFileAsync(
+                file,
+                (progress: number) => {
+                    console.log("Loading PLY file: " + progress + "% complete");
+                },
+                format
+            );
+        } catch (error) {
+            console.error("Failed to load the PLY file:", error);
+        }
+
+        // TODO: now you can do things with splat object.
     }
     loading = false;
 }
 
 async function main() {
-    // Load a placeholder scene
-    const url = "https://huggingface.co/datasets/dylanebert/3dgs/resolve/main/bonsai/bonsai-7k.splat";
-    await SPLAT.Loader.LoadAsync(url, scene, () => {});
-
-    // Render loop
     const frame = () => {
         controls.update();
         renderer.render(scene, camera);
-
         requestAnimationFrame(frame);
     };
 
     requestAnimationFrame(frame);
 
-    // Listen for file drops
     document.addEventListener("drop", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (e.dataTransfer != null) {
-            scene.reset();
+        if (e.dataTransfer) {
+            scene.reset(); // Clear the existing scene before loading new content
             selectFile(e.dataTransfer.files[0]);
         }
+    });
+
+    document.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
     });
 }
 

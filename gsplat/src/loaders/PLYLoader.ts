@@ -7,9 +7,18 @@ import { Converter } from "../utils/Converter";
 import { initiateFetchRequest, loadRequestDataIntoBuffer } from "../utils/LoaderUtils";
 
 class PLYLoader {
-    static async LoadAsync(
+    private scene: Scene;
+
+    constructor(scene: Scene) {
+        this.scene = scene;
+    }
+
+    highlightPoints(pointsIdxArray: number[], splat: Splat) {
+        // TODO: Implement highlightPoints
+    }
+
+    async LoadAsync(
         url: string,
-        scene: Scene,
         onProgress?: (progress: number) => void,
         format: string = "",
         useCache: boolean = false,
@@ -22,20 +31,15 @@ class PLYLoader {
             throw new Error("Invalid PLY file");
         }
 
-        return this.LoadFromArrayBuffer(plyData.buffer, scene, format);
+        return this.LoadFromArrayBuffer(plyData.buffer, format);
     }
 
-    static async LoadFromFileAsync(
-        file: File,
-        scene: Scene,
-        onProgress?: (progress: number) => void,
-        format: string = "",
-    ): Promise<Splat> {
+    async LoadFromFileAsync(file: File, onProgress?: (progress: number) => void, format: string = ""): Promise<Splat> {
         console.log("time to load file");
         const reader = new FileReader();
         let splat = new Splat();
         reader.onload = (e) => {
-            splat = this.LoadFromArrayBuffer(e.target!.result as ArrayBuffer, scene, format);
+            splat = this.LoadFromArrayBuffer(e.target!.result as ArrayBuffer, format);
         };
         reader.onprogress = (e) => {
             onProgress?.(e.loaded / e.total);
@@ -49,7 +53,7 @@ class PLYLoader {
         return splat;
     }
 
-    static LoadFromArrayBuffer(arrayBuffer: ArrayBufferLike, scene: Scene, format: string = ""): Splat {
+    LoadFromArrayBuffer(arrayBuffer: ArrayBufferLike, format: string = ""): Splat {
         const plyBufferMeta = this._ParsePLYBuffer(arrayBuffer, format);
         const buffer = new Uint8Array(plyBufferMeta.buffer);
 
@@ -57,12 +61,31 @@ class PLYLoader {
         // TODO: Implement semanticBuffer
         const data = SplatData.Deserialize(buffer);
         console.log(data);
+
+        // change color of certain point clouds
+        highlightFirstHalf(data);
+
+        function highlightFirstHalf(data: SplatData) {
+            // Highlight color
+            let red = 55; // Intensity value for red
+            let green = 0; // You can adjust this
+            let blue = 0; // You can adjust this
+            let alpha = 255; // Fully opaque
+
+            for (let i = 0; i < 1647524; i += 4) {
+                data.colors[i] = red; // Red channel
+                data.colors[i + 1] = green; // Green channel
+                data.colors[i + 2] = blue; // Blue channel
+                data.colors[i + 3] = alpha; // Alpha channel
+            }
+        }
+
         const splat = new Splat(data);
-        scene.addObject(splat);
+        this.scene.addObject(splat);
         return splat;
     }
 
-    private static _ParsePLYBuffer(
+    private _ParsePLYBuffer(
         inputBuffer: ArrayBuffer,
         format: string,
     ): { buffer: ArrayBuffer; semanticBuffer: ArrayBuffer } {

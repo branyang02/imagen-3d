@@ -10,9 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "evergreen-ui": "^7.1.9",
+    "gsplat": "file:../gsplat",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "gsplat": "file:../gsplat"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
@@ -23,8 +24,8 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "gsplat": "file:../gsplat",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0",
-    "gsplat": "file:../gsplat"
+    "vite": "^5.2.0"
   }
 }
