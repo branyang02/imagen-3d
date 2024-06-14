@@ -1,7 +1,6 @@
 import { Vector3 } from "../math/Vector3";
 import { Quaternion } from "../math/Quaternion";
 import { Matrix3 } from "../math/Matrix3";
-import SemanticSimilarity from "./SemanticSimilarity";
 
 class SplatData {
     static RowLength = 3 * 4 + 3 * 4 + 4 + 4;
@@ -188,11 +187,11 @@ class SplatData {
 
         console.log(this._semanticData.length); // vertexCount * 256
 
-        const vectorSimilarity = new SemanticSimilarity(this._semanticData);
-        const similarIndices = vectorSimilarity.findSimilarVectors(23);
-        console.log(similarIndices);
+        // const vectorSimilarity = new SemanticSimilarity(this._semanticData);
+        // const similarIndices = vectorSimilarity.findSimilarVectors(23);
+        // console.log(similarIndices);
 
-        // pointIndices = JSON.parse(query);
+        pointIndices = JSON.parse(query);
 
         return pointIndices;
     }
