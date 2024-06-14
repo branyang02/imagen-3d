@@ -183,20 +183,9 @@ class SplatData {
 
     findObjects(query: string) {
         let pointIndices = [];
-        const queryLower = query.toLowerCase();
         // TODO: implement search and return point indices
 
-        console.log(query);
-        console.log(this.semanticData.length);
-
-        console.log(this.semanticData.slice(0, 256));
-        // print the last 256
-        console.log(this.semanticData.slice(this.semanticData.length - 256, this.semanticData.length));
-
-        // randomly select 5000 indices
-        // for (let i = 0; i < 5000; i++) {
-        //     pointIndices.push(Math.floor(Math.random() * this.vertexCount));
-        // }
+        console.log(this._semanticData.length); // vertexCount * 256
 
         const to_add = [
             7, 23, 24, 112, 141, 142, 162, 206, 247, 248, 249, 257, 296, 309, 325, 337, 401, 422, 443, 446, 508, 513,

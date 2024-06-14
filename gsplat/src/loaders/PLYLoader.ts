@@ -53,7 +53,7 @@ class PLYLoader {
         const plyBufferMeta = this._ParsePLYBuffer(arrayBuffer, format);
         const buffer = new Uint8Array(plyBufferMeta.buffer);
 
-        const semanticBuffer = new Float32Array(plyBufferMeta.semanticBuffer); // semanticBuffer.length = 256 * vertexCount
+        const semanticBuffer = new Float32Array(plyBufferMeta.semanticBuffer); // semanticBuffer.length = semanticDataEmbeddingSize * vertexCount
         const data = SplatData.Deserialize(buffer, semanticBuffer);
         console.log(data);
 
@@ -73,7 +73,7 @@ class PLYLoader {
         };
 
         const ubuf = new Uint8Array(inputBuffer);
-        const headerText = new TextDecoder().decode(ubuf.slice(0, 1024 * 10));
+        const headerText = new TextDecoder().decode(ubuf.slice(0, 2048 * 10));
         const header_end = "end_header\n";
         const header_end_index = headerText.indexOf(header_end);
         if (header_end_index < 0) throw new Error("Unable to read .ply file header");
@@ -91,6 +91,8 @@ class PLYLoader {
             uchar: 1,
         };
 
+        let semanticDataEmbeddingSize = 0;
+
         const properties: PlyProperty[] = [];
         for (const prop of headerText
             .slice(0, header_end_index)
@@ -99,6 +101,10 @@ class PLYLoader {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const [_p, type, name] = prop.split(" ");
             properties.push({ name, type, offset: rowOffset });
+
+            if (name.startsWith("semantic_")) {
+                semanticDataEmbeddingSize += 1;
+            }
 
             if (!offsets[type]) throw new Error(`Unsupported property type: ${type}`);
             rowOffset += offsets[type];
@@ -109,7 +115,9 @@ class PLYLoader {
 
         const q_polycam = Quaternion.FromEuler(new Vector3(Math.PI / 2, 0, 0));
 
-        const bufferLength = 256 * 4 * vertexCount; // 256 entries * 4 bytes each * vertexCount
+        console.log("Semantic Data Embedding Size: ", semanticDataEmbeddingSize);
+
+        const bufferLength = semanticDataEmbeddingSize * 4 * vertexCount; // semanticDataEmbeddingSize entries * 4 bytes each * vertexCount
         const semanticBuffer = new ArrayBuffer(bufferLength);
         const semanticArrays = new Array(vertexCount);
 
@@ -125,8 +133,8 @@ class PLYLoader {
             let r3: number = 0;
 
             // Create a Float32Array view for each semanticArray
-            const offset = i * 256 * 4; // Offset in bytes for each semanticArray
-            semanticArrays[i] = new Float32Array(semanticBuffer, offset, 256);
+            const offset = i * semanticDataEmbeddingSize * 4; // Offset in bytes for each semanticArray
+            semanticArrays[i] = new Float32Array(semanticBuffer, offset, semanticDataEmbeddingSize);
 
             properties.forEach((property) => {
                 let value;
